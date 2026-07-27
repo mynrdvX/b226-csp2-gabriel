@@ -1,3 +1,5 @@
+
+//Artist.java
 package com.joysistvi.recordingapp.model;
 
 public class Artist {
