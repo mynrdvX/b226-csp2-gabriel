@@ -1,14 +1,20 @@
 package com.joysistvi.recordingapp;
 
+import com.joysistvi.recordingapp.cliview.AlbumView;
 import com.joysistvi.recordingapp.cliview.ArtistView;
 import com.joysistvi.recordingapp.cliview.SongView;
 import com.joysistvi.recordingapp.config.DbConnection;
+import com.joysistvi.recordingapp.controller.AlbumController;
 import com.joysistvi.recordingapp.controller.ArtistController;
 import com.joysistvi.recordingapp.controller.SongController;
+import com.joysistvi.recordingapp.repository.AlbumRepository;
+import com.joysistvi.recordingapp.repository.AlbumRepositoryImpl;
 import com.joysistvi.recordingapp.repository.ArtistRepository;
 import com.joysistvi.recordingapp.repository.ArtistRepositoryImpl;
 import com.joysistvi.recordingapp.repository.SongRepository;
 import com.joysistvi.recordingapp.repository.SongRepositoryImpl;
+import com.joysistvi.recordingapp.service.AlbumService;
+import com.joysistvi.recordingapp.service.AlbumServiceImpl;
 import com.joysistvi.recordingapp.service.ArtistService;
 import com.joysistvi.recordingapp.service.ArtistServiceImpl;
 import com.joysistvi.recordingapp.service.SongService;
@@ -24,16 +30,47 @@ public class App {
         DbConnection dbConnection = new DbConnection();
 
         // -------------------- Song Feature Wiring --------------------
-        SongRepository songRepository = new SongRepositoryImpl(dbConnection);
-        SongService songService = new SongServiceImpl(songRepository);
-        SongController songController = new SongController(songService);
-        SongView songView = new SongView(songController, scanner);
+        SongRepository songRepository =
+                new SongRepositoryImpl(dbConnection);
+
+        SongService songService =
+                new SongServiceImpl(songRepository);
+
+        SongController songController =
+                new SongController(songService);
+
+        SongView songView =
+                new SongView(songController, scanner);
 
         // -------------------- Artist Feature Wiring --------------------
-        ArtistRepository artistRepository = new ArtistRepositoryImpl(dbConnection);
-        ArtistService artistService = new ArtistServiceImpl(artistRepository);
-        ArtistController artistController = new ArtistController(artistService);
-        ArtistView artistView = new ArtistView(artistController, scanner);
+        ArtistRepository artistRepository =
+                new ArtistRepositoryImpl(dbConnection);
+
+        ArtistService artistService =
+                new ArtistServiceImpl(artistRepository);
+
+        ArtistController artistController =
+                new ArtistController(artistService);
+
+        ArtistView artistView =
+                new ArtistView(artistController, scanner);
+
+        // -------------------- Album Feature Wiring --------------------
+        AlbumRepository albumRepository =
+                new AlbumRepositoryImpl(dbConnection);
+
+        AlbumService albumService =
+                new AlbumServiceImpl(albumRepository);
+
+        AlbumController albumController =
+                new AlbumController(albumService);
+
+        AlbumView albumView =
+                new AlbumView(
+                        albumController,
+                        artistController,
+                        scanner
+                );
 
         // -------------------- Main Menu --------------------
         int choice;
@@ -48,7 +85,7 @@ public class App {
                     break;
 
                 case 2:
-                    System.out.println("Album Management is not wired up yet.");
+                    albumView.run();
                     break;
 
                 case 3:
@@ -56,19 +93,27 @@ public class App {
                     break;
 
                 case 4:
-                    System.out.println("Playlist Management is not wired up yet.");
+                    System.out.println(
+                            "Playlist Management is not wired up yet."
+                    );
                     break;
 
                 case 5:
-                    System.out.println("User Management is not wired up yet.");
+                    System.out.println(
+                            "User Management is not wired up yet."
+                    );
                     break;
 
                 case 0:
-                    System.out.println("Exiting Recording Studio App. Goodbye!");
+                    System.out.println(
+                            "Exiting Recording Studio App. Goodbye!"
+                    );
                     break;
 
                 default:
-                    System.out.println("Invalid choice. Try again.");
+                    System.out.println(
+                            "Invalid choice. Try again."
+                    );
             }
 
         } while (choice != 0);
@@ -76,7 +121,7 @@ public class App {
         scanner.close();
     }
 
-    // Display the main menu
+    // Displays the main menu
     private static void printMainMenu() {
 
         clearScreen();
@@ -91,7 +136,7 @@ public class App {
         System.out.print("Choice: ");
     }
 
-    // Read integer safely
+    // Reads an integer safely
     private static int readInt(Scanner scanner) {
 
         while (!scanner.hasNextInt()) {
@@ -100,12 +145,12 @@ public class App {
         }
 
         int value = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine();
 
         return value;
     }
 
-    // Clear console screen
+    // Clears the console screen
     public static void clearScreen() {
 
         System.out.print("\033[H\033[2J");
