@@ -2,6 +2,7 @@ package com.joysistvi.recordingapp;
 
 import com.joysistvi.recordingapp.cliview.AlbumView;
 import com.joysistvi.recordingapp.cliview.ArtistView;
+import com.joysistvi.recordingapp.cliview.PlaylistView;
 import com.joysistvi.recordingapp.cliview.SongView;
 import com.joysistvi.recordingapp.cliview.UserView;
 
@@ -9,6 +10,7 @@ import com.joysistvi.recordingapp.config.DbConnection;
 
 import com.joysistvi.recordingapp.controller.AlbumController;
 import com.joysistvi.recordingapp.controller.ArtistController;
+import com.joysistvi.recordingapp.controller.PlaylistController;
 import com.joysistvi.recordingapp.controller.SongController;
 import com.joysistvi.recordingapp.controller.UserController;
 
@@ -16,6 +18,8 @@ import com.joysistvi.recordingapp.repository.AlbumRepository;
 import com.joysistvi.recordingapp.repository.AlbumRepositoryImpl;
 import com.joysistvi.recordingapp.repository.ArtistRepository;
 import com.joysistvi.recordingapp.repository.ArtistRepositoryImpl;
+import com.joysistvi.recordingapp.repository.PlaylistRepository;
+import com.joysistvi.recordingapp.repository.PlaylistRepositoryImpl;
 import com.joysistvi.recordingapp.repository.SongRepository;
 import com.joysistvi.recordingapp.repository.SongRepositoryImpl;
 import com.joysistvi.recordingapp.repository.UserRepository;
@@ -25,6 +29,8 @@ import com.joysistvi.recordingapp.service.AlbumService;
 import com.joysistvi.recordingapp.service.AlbumServiceImpl;
 import com.joysistvi.recordingapp.service.ArtistService;
 import com.joysistvi.recordingapp.service.ArtistServiceImpl;
+import com.joysistvi.recordingapp.service.PlaylistService;
+import com.joysistvi.recordingapp.service.PlaylistServiceImpl;
 import com.joysistvi.recordingapp.service.SongService;
 import com.joysistvi.recordingapp.service.SongServiceImpl;
 import com.joysistvi.recordingapp.service.UserService;
@@ -95,6 +101,23 @@ public class App {
         UserView userView =
                 new UserView(userController, scanner);
 
+        // -------------------- Playlist Feature Wiring --------------------
+        PlaylistRepository playlistRepository =
+                new PlaylistRepositoryImpl(dbConnection);
+
+        PlaylistService playlistService =
+                new PlaylistServiceImpl(playlistRepository);
+
+        PlaylistController playlistController =
+                new PlaylistController(playlistService);
+
+        PlaylistView playlistView =
+                new PlaylistView(
+                        playlistController,
+                        userController,
+                        scanner
+                );
+
         // -------------------- Main Menu --------------------
         int choice;
 
@@ -116,10 +139,7 @@ public class App {
                     break;
 
                 case 4:
-                    System.out.println(
-                            "Playlist Management is not wired up yet."
-                    );
-                    pause(scanner);
+                    playlistView.run();
                     break;
 
                 case 5:
