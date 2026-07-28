@@ -3,22 +3,32 @@ package com.joysistvi.recordingapp;
 import com.joysistvi.recordingapp.cliview.AlbumView;
 import com.joysistvi.recordingapp.cliview.ArtistView;
 import com.joysistvi.recordingapp.cliview.SongView;
+import com.joysistvi.recordingapp.cliview.UserView;
+
 import com.joysistvi.recordingapp.config.DbConnection;
+
 import com.joysistvi.recordingapp.controller.AlbumController;
 import com.joysistvi.recordingapp.controller.ArtistController;
 import com.joysistvi.recordingapp.controller.SongController;
+import com.joysistvi.recordingapp.controller.UserController;
+
 import com.joysistvi.recordingapp.repository.AlbumRepository;
 import com.joysistvi.recordingapp.repository.AlbumRepositoryImpl;
 import com.joysistvi.recordingapp.repository.ArtistRepository;
 import com.joysistvi.recordingapp.repository.ArtistRepositoryImpl;
 import com.joysistvi.recordingapp.repository.SongRepository;
 import com.joysistvi.recordingapp.repository.SongRepositoryImpl;
+import com.joysistvi.recordingapp.repository.UserRepository;
+import com.joysistvi.recordingapp.repository.UserRepositoryImpl;
+
 import com.joysistvi.recordingapp.service.AlbumService;
 import com.joysistvi.recordingapp.service.AlbumServiceImpl;
 import com.joysistvi.recordingapp.service.ArtistService;
 import com.joysistvi.recordingapp.service.ArtistServiceImpl;
 import com.joysistvi.recordingapp.service.SongService;
 import com.joysistvi.recordingapp.service.SongServiceImpl;
+import com.joysistvi.recordingapp.service.UserService;
+import com.joysistvi.recordingapp.service.UserServiceImpl;
 
 import java.util.Scanner;
 
@@ -72,6 +82,19 @@ public class App {
                         scanner
                 );
 
+        // -------------------- User Feature Wiring --------------------
+        UserRepository userRepository =
+                new UserRepositoryImpl(dbConnection);
+
+        UserService userService =
+                new UserServiceImpl(userRepository);
+
+        UserController userController =
+                new UserController(userService);
+
+        UserView userView =
+                new UserView(userController, scanner);
+
         // -------------------- Main Menu --------------------
         int choice;
 
@@ -96,12 +119,11 @@ public class App {
                     System.out.println(
                             "Playlist Management is not wired up yet."
                     );
+                    pause(scanner);
                     break;
 
                 case 5:
-                    System.out.println(
-                            "User Management is not wired up yet."
-                    );
+                    userView.run();
                     break;
 
                 case 0:
@@ -114,6 +136,7 @@ public class App {
                     System.out.println(
                             "Invalid choice. Try again."
                     );
+                    pause(scanner);
             }
 
         } while (choice != 0);
@@ -141,13 +164,20 @@ public class App {
 
         while (!scanner.hasNextInt()) {
             System.out.print("Please enter a valid number: ");
-            scanner.next();
+            scanner.nextLine();
         }
 
         int value = scanner.nextInt();
         scanner.nextLine();
 
         return value;
+    }
+
+    // Pauses the program before returning to the menu
+    private static void pause(Scanner scanner) {
+
+        System.out.println("\nPress Enter to continue...");
+        scanner.nextLine();
     }
 
     // Clears the console screen
