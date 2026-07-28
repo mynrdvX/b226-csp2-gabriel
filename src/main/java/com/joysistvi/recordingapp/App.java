@@ -2,6 +2,7 @@ package com.joysistvi.recordingapp;
 
 import com.joysistvi.recordingapp.cliview.AlbumView;
 import com.joysistvi.recordingapp.cliview.ArtistView;
+import com.joysistvi.recordingapp.cliview.PlaylistSongCliView;
 import com.joysistvi.recordingapp.cliview.PlaylistView;
 import com.joysistvi.recordingapp.cliview.SongView;
 import com.joysistvi.recordingapp.cliview.UserView;
@@ -11,6 +12,7 @@ import com.joysistvi.recordingapp.config.DbConnection;
 import com.joysistvi.recordingapp.controller.AlbumController;
 import com.joysistvi.recordingapp.controller.ArtistController;
 import com.joysistvi.recordingapp.controller.PlaylistController;
+import com.joysistvi.recordingapp.controller.PlaylistSongController;
 import com.joysistvi.recordingapp.controller.SongController;
 import com.joysistvi.recordingapp.controller.UserController;
 
@@ -20,6 +22,8 @@ import com.joysistvi.recordingapp.repository.ArtistRepository;
 import com.joysistvi.recordingapp.repository.ArtistRepositoryImpl;
 import com.joysistvi.recordingapp.repository.PlaylistRepository;
 import com.joysistvi.recordingapp.repository.PlaylistRepositoryImpl;
+import com.joysistvi.recordingapp.repository.PlaylistSongRepository;
+import com.joysistvi.recordingapp.repository.PlaylistSongRepositoryImpl;
 import com.joysistvi.recordingapp.repository.SongRepository;
 import com.joysistvi.recordingapp.repository.SongRepositoryImpl;
 import com.joysistvi.recordingapp.repository.UserRepository;
@@ -31,6 +35,8 @@ import com.joysistvi.recordingapp.service.ArtistService;
 import com.joysistvi.recordingapp.service.ArtistServiceImpl;
 import com.joysistvi.recordingapp.service.PlaylistService;
 import com.joysistvi.recordingapp.service.PlaylistServiceImpl;
+import com.joysistvi.recordingapp.service.PlaylistSongService;
+import com.joysistvi.recordingapp.service.PlaylistSongServiceImpl;
 import com.joysistvi.recordingapp.service.SongService;
 import com.joysistvi.recordingapp.service.SongServiceImpl;
 import com.joysistvi.recordingapp.service.UserService;
@@ -118,6 +124,26 @@ public class App {
                         scanner
                 );
 
+        // ---------------- Playlist Song Feature Wiring ----------------
+        PlaylistSongRepository playlistSongRepository =
+                new PlaylistSongRepositoryImpl(dbConnection);
+
+        PlaylistSongService playlistSongService =
+                new PlaylistSongServiceImpl(
+                        playlistSongRepository
+                );
+
+        PlaylistSongController playlistSongController =
+                new PlaylistSongController(
+                        playlistSongService
+                );
+
+        PlaylistSongCliView playlistSongCliView =
+                new PlaylistSongCliView(
+                        playlistSongController,
+                        scanner
+                );
+
         // -------------------- Main Menu --------------------
         int choice;
 
@@ -143,6 +169,10 @@ public class App {
                     break;
 
                 case 5:
+                    playlistSongCliView.run();
+                    break;
+
+                case 6:
                     userView.run();
                     break;
 
@@ -169,12 +199,14 @@ public class App {
 
         clearScreen();
 
-        System.out.println("\n===== RECORDING STUDIO APP =====");
+        System.out.println();
+        System.out.println("===== RECORDING STUDIO APP =====");
         System.out.println("1. Song Management");
         System.out.println("2. Album Management");
         System.out.println("3. Artist Management");
         System.out.println("4. Playlist Management");
-        System.out.println("5. User Management");
+        System.out.println("5. Playlist Song Management");
+        System.out.println("6. User Management");
         System.out.println("0. Exit");
         System.out.print("Choice: ");
     }
@@ -183,7 +215,9 @@ public class App {
     private static int readInt(Scanner scanner) {
 
         while (!scanner.hasNextInt()) {
-            System.out.print("Please enter a valid number: ");
+            System.out.print(
+                    "Please enter a valid number: "
+            );
             scanner.nextLine();
         }
 
@@ -196,7 +230,9 @@ public class App {
     // Pauses the program before returning to the menu
     private static void pause(Scanner scanner) {
 
-        System.out.println("\nPress Enter to continue...");
+        System.out.println(
+                "\nPress Enter to continue..."
+        );
         scanner.nextLine();
     }
 
