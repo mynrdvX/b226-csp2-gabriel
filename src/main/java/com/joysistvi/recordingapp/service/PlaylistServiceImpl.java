@@ -88,6 +88,83 @@ public class PlaylistServiceImpl implements PlaylistService {
         return playlistRepository.deletePlaylist(id);
     }
 
+    @Override
+    public List<Playlist> getPlaylistsByUserId(int userId) {
+
+        if (userId <= 0) {
+            System.out.println(
+                    "User ID must be greater than zero."
+            );
+            return Collections.emptyList();
+        }
+
+        return playlistRepository.getPlaylistsByUserId(
+                userId
+        );
+    }
+
+    @Override
+    public boolean playlistBelongsToUser(
+            int playlistId,
+            int userId
+    ) {
+
+        if (playlistId <= 0) {
+            System.out.println(
+                    "Playlist ID must be greater than zero."
+            );
+            return false;
+        }
+
+        if (userId <= 0) {
+            System.out.println(
+                    "User ID must be greater than zero."
+            );
+            return false;
+        }
+
+        return playlistRepository.playlistBelongsToUser(
+                playlistId,
+                userId
+        );
+    }
+
+    @Override
+    public boolean deletePlaylistByUser(
+            int playlistId,
+            int userId
+    ) {
+
+        if (playlistId <= 0) {
+            System.out.println(
+                    "Playlist ID must be greater than zero."
+            );
+            return false;
+        }
+
+        if (userId <= 0) {
+            System.out.println(
+                    "User ID must be greater than zero."
+            );
+            return false;
+        }
+
+        if (!playlistRepository.playlistBelongsToUser(
+                playlistId,
+                userId
+        )) {
+            System.out.println(
+                    "Playlist not found or you do not own this playlist."
+            );
+            return false;
+        }
+
+        return playlistRepository.deletePlaylistByUser(
+                playlistId,
+                userId
+        );
+    }
+
     private boolean isValidPlaylist(
             Playlist playlist,
             boolean requireId

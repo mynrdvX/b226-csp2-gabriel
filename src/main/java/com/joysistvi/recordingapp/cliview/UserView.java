@@ -11,7 +11,10 @@ public class UserView {
     private final UserController userController;
     private final Scanner scanner;
 
-    public UserView(UserController userController, Scanner scanner) {
+    public UserView(
+            UserController userController,
+            Scanner scanner
+    ) {
         this.userController = userController;
         this.scanner = scanner;
     }
@@ -23,6 +26,7 @@ public class UserView {
         do {
             clearScreen();
             printMenu();
+
             choice = readInt("Choice: ");
 
             switch (choice) {
@@ -47,11 +51,15 @@ public class UserView {
                     break;
 
                 case 0:
-                    System.out.println("Returning to main menu...");
+                    System.out.println(
+                            "Returning to main menu..."
+                    );
                     break;
 
                 default:
-                    System.out.println("Invalid choice. Try again.");
+                    System.out.println(
+                            "Invalid choice. Please select from 0 to 5."
+                    );
                     pause();
             }
 
@@ -60,21 +68,42 @@ public class UserView {
 
     private void printMenu() {
 
-        System.out.println("\n===== USER MANAGEMENT =====");
-        System.out.println("1. View All Users");
-        System.out.println("2. Search User");
-        System.out.println("3. Add User");
-        System.out.println("4. Update User");
-        System.out.println("5. Delete User");
-        System.out.println("0. Back");
+        System.out.println();
+        System.out.println(
+                "===== USER MANAGEMENT ====="
+        );
+        System.out.println(
+                "1. View All Users"
+        );
+        System.out.println(
+                "2. Search User"
+        );
+        System.out.println(
+                "3. Add User"
+        );
+        System.out.println(
+                "4. Update User"
+        );
+        System.out.println(
+                "5. Delete User"
+        );
+        System.out.println(
+                "0. Back"
+        );
     }
 
     private void viewAllUsers() {
 
         clearScreen();
-        System.out.println("\n===== ALL USERS =====");
 
-        List<User> users = userController.getAllUsers();
+        System.out.println();
+        System.out.println(
+                "===== ALL USERS ====="
+        );
+
+        List<User> users =
+                userController.getAllUsers();
+
         printUsers(users);
 
         pause();
@@ -83,12 +112,22 @@ public class UserView {
     private void searchUser() {
 
         clearScreen();
-        System.out.println("\n===== SEARCH USER =====");
 
-        System.out.print("Enter username keyword: ");
-        String keyword = scanner.nextLine();
+        System.out.println();
+        System.out.println(
+                "===== SEARCH USER ====="
+        );
 
-        List<User> users = userController.searchUser(keyword);
+        System.out.print(
+                "Enter username keyword: "
+        );
+
+        String keyword =
+                scanner.nextLine().trim();
+
+        List<User> users =
+                userController.searchUser(keyword);
+
         printUsers(users);
 
         pause();
@@ -97,22 +136,47 @@ public class UserView {
     private void addUser() {
 
         clearScreen();
-        System.out.println("\n===== ADD USER =====");
 
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
+        System.out.println();
+        System.out.println(
+                "===== ADD USER ====="
+        );
 
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
+        System.out.print(
+                "Username: "
+        );
 
-        User user = new User(username, password);
+        String username =
+                scanner.nextLine().trim();
 
-        boolean success = userController.addUser(user);
+        System.out.print(
+                "Password: "
+        );
+
+        String password =
+                scanner.nextLine();
+
+        /*
+         * This constructor automatically assigns
+         * the default USER role.
+         */
+        User user =
+                new User(username, password);
+
+        boolean success =
+                userController.addUser(user);
 
         if (success) {
-            System.out.println("User added successfully.");
+            System.out.println(
+                    "User added successfully."
+            );
+            System.out.println(
+                    "Assigned role: " + user.getRole()
+            );
         } else {
-            System.out.println("Failed to add user.");
+            System.out.println(
+                    "Failed to add user."
+            );
         }
 
         pause();
@@ -121,32 +185,97 @@ public class UserView {
     private void updateUser() {
 
         clearScreen();
-        System.out.println("\n===== UPDATE USER =====");
 
-        List<User> users = userController.getAllUsers();
+        System.out.println();
+        System.out.println(
+                "===== UPDATE USER ====="
+        );
+
+        List<User> users =
+                userController.getAllUsers();
+
         printUsers(users);
 
-        if (users.isEmpty()) {
+        if (users == null || users.isEmpty()) {
             pause();
             return;
         }
 
-        int id = readInt("User ID to update: ");
+        int id = readInt(
+                "User ID to update: "
+        );
 
-        System.out.print("New Username: ");
-        String username = scanner.nextLine();
+        User selectedUser =
+                findUserById(users, id);
 
-        System.out.print("New Password: ");
-        String password = scanner.nextLine();
+        if (selectedUser == null) {
+            System.out.println(
+                    "User was not found."
+            );
+            pause();
+            return;
+        }
 
-        User user = new User(id, username, password);
+        System.out.println();
+        System.out.println(
+                "Selected User"
+        );
+        System.out.println(
+                "-----------------------------"
+        );
+        System.out.println(
+                "Username : "
+                        + selectedUser.getUsername()
+        );
+        System.out.println(
+                "Role     : "
+                        + selectedUser.getRole()
+        );
+        System.out.println();
 
-        boolean success = userController.updateUser(user);
+        System.out.print(
+                "New Username: "
+        );
+
+        String username =
+                scanner.nextLine().trim();
+
+        System.out.print(
+                "New Password: "
+        );
+
+        String password =
+                scanner.nextLine();
+
+        /*
+         * Preserve the user's current role.
+         *
+         * This prevents an ADMIN account from being
+         * accidentally changed into a USER account.
+         */
+        User updatedUser =
+                new User(
+                        id,
+                        username,
+                        password,
+                        selectedUser.getRole()
+                );
+
+        boolean success =
+                userController.updateUser(updatedUser);
 
         if (success) {
-            System.out.println("User updated successfully.");
+            System.out.println(
+                    "User updated successfully."
+            );
+            System.out.println(
+                    "Role preserved: "
+                            + selectedUser.getRole()
+            );
         } else {
-            System.out.println("Failed to update user.");
+            System.out.println(
+                    "Failed to update user."
+            );
         }
 
         pause();
@@ -155,93 +284,198 @@ public class UserView {
     private void deleteUser() {
 
         clearScreen();
-        System.out.println("\n===== DELETE USER =====");
 
-        List<User> users = userController.getAllUsers();
-        printUsers(users);
-
-        if (users.isEmpty()) {
-            pause();
-            return;
-        }
-
-        int id = readInt("User ID to delete: ");
-
-        System.out.print(
-                "Are you sure you want to delete this user? (Y/N): "
+        System.out.println();
+        System.out.println(
+                "===== DELETE USER ====="
         );
 
-        String confirmation = scanner.nextLine().trim();
+        List<User> users =
+                userController.getAllUsers();
 
-        if (!confirmation.equalsIgnoreCase("Y")) {
-            System.out.println("User deletion cancelled.");
+        printUsers(users);
+
+        if (users == null || users.isEmpty()) {
             pause();
             return;
         }
 
-        boolean success = userController.deleteUser(id);
+        int id = readInt(
+                "User ID to delete: "
+        );
+
+        User selectedUser =
+                findUserById(users, id);
+
+        if (selectedUser == null) {
+            System.out.println(
+                    "User was not found."
+            );
+            pause();
+            return;
+        }
+
+        System.out.println();
+        System.out.println(
+                "Selected User"
+        );
+        System.out.println(
+                "-----------------------------"
+        );
+        System.out.println(
+                "Username : "
+                        + selectedUser.getUsername()
+        );
+        System.out.println(
+                "Role     : "
+                        + selectedUser.getRole()
+        );
+        System.out.println();
+
+        String confirmation;
+
+        while (true) {
+
+            System.out.print(
+                    "Are you sure you want to delete this user? (Y/N): "
+            );
+
+            confirmation =
+                    scanner.nextLine().trim();
+
+            if (confirmation.equalsIgnoreCase("Y")
+                    || confirmation.equalsIgnoreCase("N")) {
+                break;
+            }
+
+            System.out.println(
+                    "Invalid choice. Please enter Y or N only."
+            );
+        }
+
+        if (confirmation.equalsIgnoreCase("N")) {
+            System.out.println(
+                    "User deletion cancelled."
+            );
+            pause();
+            return;
+        }
+
+        boolean success =
+                userController.deleteUser(id);
 
         if (success) {
-            System.out.println("User deleted successfully.");
+            System.out.println(
+                    "User deleted successfully."
+            );
         } else {
-            System.out.println("Failed to delete user.");
+            System.out.println(
+                    "Failed to delete user."
+            );
         }
 
         pause();
     }
 
-    private void printUsers(List<User> users) {
+    private User findUserById(
+            List<User> users,
+            int id
+    ) {
+
+        for (User user : users) {
+
+            if (user.getId() == id) {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    private void printUsers(
+            List<User> users
+    ) {
 
         if (users == null || users.isEmpty()) {
-            System.out.println("No users found.");
+            System.out.println(
+                    "No users found."
+            );
             return;
         }
 
-        System.out.println("+------+---------------------------+");
-        System.out.printf(
-                "| %-4s | %-25s |%n",
-                "ID",
-                "Username"
+        System.out.println(
+                "+------+---------------------------+------------+"
         );
-        System.out.println("+------+---------------------------+");
+
+        System.out.printf(
+                "| %-4s | %-25s | %-10s |%n",
+                "ID",
+                "Username",
+                "Role"
+        );
+
+        System.out.println(
+                "+------+---------------------------+------------+"
+        );
 
         for (User user : users) {
+
+            String role =
+                    user.getRole() == null
+                            ? "USER"
+                            : user.getRole();
+
             System.out.printf(
-                    "| %-4d | %-25s |%n",
+                    "| %-4d | %-25s | %-10s |%n",
                     user.getId(),
-                    user.getUsername()
+                    user.getUsername(),
+                    role
             );
         }
 
-        System.out.println("+------+---------------------------+");
+        System.out.println(
+                "+------+---------------------------+------------+"
+        );
     }
 
-    private int readInt(String prompt) {
+    private int readInt(
+            String prompt
+    ) {
 
         while (true) {
 
             System.out.print(prompt);
 
-            if (scanner.hasNextInt()) {
-                int value = scanner.nextInt();
-                scanner.nextLine();
-                return value;
-            }
+            String input =
+                    scanner.nextLine().trim();
 
-            System.out.println("Please enter a valid number.");
-            scanner.nextLine();
+            try {
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.println(
+                        "Please enter a valid whole number."
+                );
+            }
         }
     }
 
     private void pause() {
 
-        System.out.println("\nPress Enter to continue...");
+        System.out.println();
+        System.out.println(
+                "Press Enter to continue..."
+        );
+
         scanner.nextLine();
     }
 
     private void clearScreen() {
 
-        System.out.print("\033[H\033[2J");
+        System.out.print(
+                "\033[H\033[2J"
+        );
+
         System.out.flush();
     }
 }

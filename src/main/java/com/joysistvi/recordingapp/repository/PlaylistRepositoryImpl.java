@@ -11,11 +11,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistRepositoryImpl implements PlaylistRepository {
+public class PlaylistRepositoryImpl
+        implements PlaylistRepository {
 
     private final DbConnection dbConnection;
 
-    public PlaylistRepositoryImpl(DbConnection dbConnection) {
+    public PlaylistRepositoryImpl(
+            DbConnection dbConnection
+    ) {
         this.dbConnection = dbConnection;
     }
 
@@ -38,14 +41,22 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
                 """;
 
         try (
-                Connection connection = dbConnection.connect();
+                Connection connection =
+                        dbConnection.connect();
+
                 PreparedStatement statement =
                         connection.prepareStatement(sql);
-                ResultSet resultSet = statement.executeQuery()
+
+                ResultSet resultSet =
+                        statement.executeQuery()
         ) {
 
             while (resultSet.next()) {
-                playlists.add(mapResultSetToPlaylist(resultSet));
+                playlists.add(
+                        mapResultSetToPlaylist(
+                                resultSet
+                        )
+                );
             }
 
         } catch (SQLException e) {
@@ -59,7 +70,9 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public List<Playlist> searchPlaylist(String keyword) {
+    public List<Playlist> searchPlaylist(
+            String keyword
+    ) {
 
         List<Playlist> playlists = new ArrayList<>();
 
@@ -79,21 +92,29 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
                 """;
 
         try (
-                Connection connection = dbConnection.connect();
+                Connection connection =
+                        dbConnection.connect();
+
                 PreparedStatement statement =
                         connection.prepareStatement(sql)
         ) {
 
-            String searchValue = "%" + keyword + "%";
+            String searchValue =
+                    "%" + keyword + "%";
 
             statement.setString(1, searchValue);
             statement.setString(2, searchValue);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try (
+                    ResultSet resultSet =
+                            statement.executeQuery()
+            ) {
 
                 while (resultSet.next()) {
                     playlists.add(
-                            mapResultSetToPlaylist(resultSet)
+                            mapResultSetToPlaylist(
+                                    resultSet
+                            )
                     );
                 }
             }
@@ -109,15 +130,22 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public boolean createPlaylist(Playlist playlist) {
+    public boolean createPlaylist(
+            Playlist playlist
+    ) {
 
         String sql = """
-                INSERT INTO playlists (name, user_id)
+                INSERT INTO playlists (
+                    name,
+                    user_id
+                )
                 VALUES (?, ?)
                 """;
 
         try (
-                Connection connection = dbConnection.connect();
+                Connection connection =
+                        dbConnection.connect();
+
                 PreparedStatement statement =
                         connection.prepareStatement(sql)
         ) {
@@ -139,21 +167,27 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
                     "Error creating playlist: "
                             + e.getMessage()
             );
+
             return false;
         }
     }
 
     @Override
-    public boolean updatePlaylist(Playlist playlist) {
+    public boolean updatePlaylist(
+            Playlist playlist
+    ) {
 
         String sql = """
                 UPDATE playlists
-                SET name = ?, user_id = ?
+                SET name = ?,
+                    user_id = ?
                 WHERE id = ?
                 """;
 
         try (
-                Connection connection = dbConnection.connect();
+                Connection connection =
+                        dbConnection.connect();
+
                 PreparedStatement statement =
                         connection.prepareStatement(sql)
         ) {
@@ -180,6 +214,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
                     "Error updating playlist: "
                             + e.getMessage()
             );
+
             return false;
         }
     }
@@ -193,7 +228,9 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
                 """;
 
         try (
-                Connection connection = dbConnection.connect();
+                Connection connection =
+                        dbConnection.connect();
+
                 PreparedStatement statement =
                         connection.prepareStatement(sql)
         ) {
@@ -207,6 +244,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
                     "Error deleting playlist: "
                             + e.getMessage()
             );
+
             return false;
         }
     }
@@ -218,14 +256,18 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     ) {
 
         String sql = """
-                SELECT COUNT(*) AS total
-                FROM playlists
-                WHERE name = ?
-                  AND user_id = ?
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM playlists
+                    WHERE name = ?
+                      AND user_id = ?
+                ) AS playlist_exists
                 """;
 
         try (
-                Connection connection = dbConnection.connect();
+                Connection connection =
+                        dbConnection.connect();
+
                 PreparedStatement statement =
                         connection.prepareStatement(sql)
         ) {
@@ -233,10 +275,15 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
             statement.setString(1, name);
             statement.setInt(2, userId);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try (
+                    ResultSet resultSet =
+                            statement.executeQuery()
+            ) {
 
                 if (resultSet.next()) {
-                    return resultSet.getInt("total") > 0;
+                    return resultSet.getBoolean(
+                            "playlist_exists"
+                    );
                 }
             }
 
@@ -250,12 +297,154 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         return false;
     }
 
+    @Override
+    public List<Playlist> getPlaylistsByUserId(
+            int userId
+    ) {
+
+        List<Playlist> playlists = new ArrayList<>();
+
+        String sql = """
+                SELECT
+                    playlists.id,
+                    playlists.name,
+                    playlists.date_created,
+                    playlists.user_id,
+                    users.username
+                FROM playlists
+                INNER JOIN users
+                    ON playlists.user_id = users.id
+                WHERE playlists.user_id = ?
+                ORDER BY
+                    playlists.date_created DESC,
+                    playlists.id DESC
+                """;
+
+        try (
+                Connection connection =
+                        dbConnection.connect();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
+        ) {
+
+            statement.setInt(1, userId);
+
+            try (
+                    ResultSet resultSet =
+                            statement.executeQuery()
+            ) {
+
+                while (resultSet.next()) {
+                    playlists.add(
+                            mapResultSetToPlaylist(
+                                    resultSet
+                            )
+                    );
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(
+                    "Error retrieving user playlists: "
+                            + e.getMessage()
+            );
+        }
+
+        return playlists;
+    }
+
+    @Override
+    public boolean playlistBelongsToUser(
+            int playlistId,
+            int userId
+    ) {
+
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM playlists
+                    WHERE id = ?
+                      AND user_id = ?
+                ) AS playlist_exists
+                """;
+
+        try (
+                Connection connection =
+                        dbConnection.connect();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
+        ) {
+
+            statement.setInt(1, playlistId);
+            statement.setInt(2, userId);
+
+            try (
+                    ResultSet resultSet =
+                            statement.executeQuery()
+            ) {
+
+                if (resultSet.next()) {
+                    return resultSet.getBoolean(
+                            "playlist_exists"
+                    );
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(
+                    "Error checking playlist ownership: "
+                            + e.getMessage()
+            );
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean deletePlaylistByUser(
+            int playlistId,
+            int userId
+    ) {
+
+        String sql = """
+                DELETE FROM playlists
+                WHERE id = ?
+                  AND user_id = ?
+                """;
+
+        try (
+                Connection connection =
+                        dbConnection.connect();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
+        ) {
+
+            statement.setInt(1, playlistId);
+            statement.setInt(2, userId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.out.println(
+                    "Error deleting user playlist: "
+                            + e.getMessage()
+            );
+
+            return false;
+        }
+    }
+
     private Playlist mapResultSetToPlaylist(
             ResultSet resultSet
     ) throws SQLException {
 
         Timestamp timestamp =
-                resultSet.getTimestamp("date_created");
+                resultSet.getTimestamp(
+                        "date_created"
+                );
 
         return new Playlist(
                 resultSet.getInt("id"),

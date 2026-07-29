@@ -1,10 +1,12 @@
 package com.joysistvi.recordingapp;
 
+import com.joysistvi.recordingapp.cliview.AdminDashboardView;
 import com.joysistvi.recordingapp.cliview.AlbumView;
 import com.joysistvi.recordingapp.cliview.ArtistView;
-import com.joysistvi.recordingapp.cliview.PlaylistSongCliView;
-import com.joysistvi.recordingapp.cliview.PlaylistView;
+import com.joysistvi.recordingapp.cliview.AuthView;
 import com.joysistvi.recordingapp.cliview.SongView;
+import com.joysistvi.recordingapp.cliview.UserDashboardView;
+import com.joysistvi.recordingapp.cliview.UserPlaylistView;
 import com.joysistvi.recordingapp.cliview.UserView;
 
 import com.joysistvi.recordingapp.config.DbConnection;
@@ -15,6 +17,8 @@ import com.joysistvi.recordingapp.controller.PlaylistController;
 import com.joysistvi.recordingapp.controller.PlaylistSongController;
 import com.joysistvi.recordingapp.controller.SongController;
 import com.joysistvi.recordingapp.controller.UserController;
+
+import com.joysistvi.recordingapp.model.User;
 
 import com.joysistvi.recordingapp.repository.AlbumRepository;
 import com.joysistvi.recordingapp.repository.AlbumRepositoryImpl;
@@ -51,7 +55,12 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         DbConnection dbConnection = new DbConnection();
 
-        // -------------------- Song Feature Wiring --------------------
+        /*
+         * =========================================================
+         * SONG MODULE
+         * =========================================================
+         */
+
         SongRepository songRepository =
                 new SongRepositoryImpl(dbConnection);
 
@@ -62,9 +71,17 @@ public class App {
                 new SongController(songService);
 
         SongView songView =
-                new SongView(songController, scanner);
+                new SongView(
+                        songController,
+                        scanner
+                );
 
-        // -------------------- Artist Feature Wiring --------------------
+        /*
+         * =========================================================
+         * ARTIST MODULE
+         * =========================================================
+         */
+
         ArtistRepository artistRepository =
                 new ArtistRepositoryImpl(dbConnection);
 
@@ -75,9 +92,17 @@ public class App {
                 new ArtistController(artistService);
 
         ArtistView artistView =
-                new ArtistView(artistController, scanner);
+                new ArtistView(
+                        artistController,
+                        scanner
+                );
 
-        // -------------------- Album Feature Wiring --------------------
+        /*
+         * =========================================================
+         * ALBUM MODULE
+         * =========================================================
+         */
+
         AlbumRepository albumRepository =
                 new AlbumRepositoryImpl(dbConnection);
 
@@ -94,7 +119,12 @@ public class App {
                         scanner
                 );
 
-        // -------------------- User Feature Wiring --------------------
+        /*
+         * =========================================================
+         * USER AND AUTHENTICATION MODULE
+         * =========================================================
+         */
+
         UserRepository userRepository =
                 new UserRepositoryImpl(dbConnection);
 
@@ -105,26 +135,42 @@ public class App {
                 new UserController(userService);
 
         UserView userView =
-                new UserView(userController, scanner);
-
-        // -------------------- Playlist Feature Wiring --------------------
-        PlaylistRepository playlistRepository =
-                new PlaylistRepositoryImpl(dbConnection);
-
-        PlaylistService playlistService =
-                new PlaylistServiceImpl(playlistRepository);
-
-        PlaylistController playlistController =
-                new PlaylistController(playlistService);
-
-        PlaylistView playlistView =
-                new PlaylistView(
-                        playlistController,
+                new UserView(
                         userController,
                         scanner
                 );
 
-        // ---------------- Playlist Song Feature Wiring ----------------
+        AuthView authView =
+                new AuthView(
+                        userController,
+                        scanner
+                );
+
+        /*
+         * =========================================================
+         * PLAYLIST MODULE
+         * =========================================================
+         */
+
+        PlaylistRepository playlistRepository =
+                new PlaylistRepositoryImpl(dbConnection);
+
+        PlaylistService playlistService =
+                new PlaylistServiceImpl(
+                        playlistRepository
+                );
+
+        PlaylistController playlistController =
+                new PlaylistController(
+                        playlistService
+                );
+
+        /*
+         * =========================================================
+         * PLAYLIST-SONG MODULE
+         * =========================================================
+         */
+
         PlaylistSongRepository playlistSongRepository =
                 new PlaylistSongRepositoryImpl(dbConnection);
 
@@ -138,108 +184,196 @@ public class App {
                         playlistSongService
                 );
 
-        PlaylistSongCliView playlistSongCliView =
-                new PlaylistSongCliView(
+        /*
+         * =========================================================
+         * USER PLAYLIST VIEW
+         * =========================================================
+         */
+
+        UserPlaylistView userPlaylistView =
+                new UserPlaylistView(
+                        playlistController,
                         playlistSongController,
+                        songController,
                         scanner
                 );
 
-        // -------------------- Main Menu --------------------
-        int choice;
+        /*
+         * =========================================================
+         * ADMIN DASHBOARD
+         * =========================================================
+         */
 
-        do {
-            printMainMenu();
-            choice = readInt(scanner);
+        AdminDashboardView adminDashboardView =
+                new AdminDashboardView(
+                        songView,
+                        albumView,
+                        artistView,
+                        userView,
+                        scanner
+                );
+
+        /*
+         * =========================================================
+         * USER DASHBOARD
+         * =========================================================
+         */
+
+        UserDashboardView userDashboardView =
+                new UserDashboardView(
+                        songController,
+                        albumController,
+                        artistController,
+                        userPlaylistView,
+                        scanner
+                );
+
+        /*
+         * =========================================================
+         * APPLICATION AUTHENTICATION MENU
+         * =========================================================
+         */
+
+        boolean applicationRunning = true;
+
+        while (applicationRunning) {
+
+            showAuthenticationMenu();
+
+            int choice = readInteger(scanner);
 
             switch (choice) {
+
                 case 1:
-                    songView.run();
+                    handleLogin(
+                            authView,
+                            adminDashboardView,
+                            userDashboardView
+                    );
                     break;
 
                 case 2:
-                    albumView.run();
-                    break;
-
-                case 3:
-                    artistView.showMenu();
-                    break;
-
-                case 4:
-                    playlistView.run();
-                    break;
-
-                case 5:
-                    playlistSongCliView.run();
-                    break;
-
-                case 6:
-                    userView.run();
+                    authView.register();
+                    pause(scanner);
                     break;
 
                 case 0:
+                    applicationRunning = false;
+
+                    System.out.println();
                     System.out.println(
                             "Exiting Recording Studio App. Goodbye!"
                     );
                     break;
 
                 default:
+                    System.out.println();
                     System.out.println(
-                            "Invalid choice. Try again."
+                            "Invalid option. Please choose from 0 to 2."
                     );
                     pause(scanner);
             }
-
-        } while (choice != 0);
+        }
 
         scanner.close();
     }
 
-    // Displays the main menu
-    private static void printMainMenu() {
+    /**
+     * Processes login and sends the authenticated user
+     * to the correct dashboard based on their role.
+     */
+    private static void handleLogin(
+            AuthView authView,
+            AdminDashboardView adminDashboardView,
+            UserDashboardView userDashboardView
+    ) {
+
+        User loggedInUser = authView.login();
+
+        if (loggedInUser == null) {
+            return;
+        }
+
+        if (loggedInUser.isAdmin()) {
+
+            adminDashboardView.run();
+
+        } else if (loggedInUser.isUser()) {
+
+            userDashboardView.run(loggedInUser);
+
+        } else {
+
+            System.out.println();
+            System.out.println(
+                    "Access denied. The account has an invalid role: "
+                            + loggedInUser.getRole()
+            );
+        }
+    }
+
+    /**
+     * Displays the application's authentication menu.
+     */
+    private static void showAuthenticationMenu() {
 
         clearScreen();
 
         System.out.println();
-        System.out.println("===== RECORDING STUDIO APP =====");
-        System.out.println("1. Song Management");
-        System.out.println("2. Album Management");
-        System.out.println("3. Artist Management");
-        System.out.println("4. Playlist Management");
-        System.out.println("5. Playlist Song Management");
-        System.out.println("6. User Management");
+        System.out.println(
+                "========================================"
+        );
+        System.out.println(
+                "       RECORDING STUDIO APPLICATION"
+        );
+        System.out.println(
+                "========================================"
+        );
+        System.out.println();
+        System.out.println("1. Login");
+        System.out.println("2. Register");
         System.out.println("0. Exit");
-        System.out.print("Choice: ");
+        System.out.println();
+        System.out.print("Enter your choice: ");
     }
 
-    // Reads an integer safely
-    private static int readInt(Scanner scanner) {
+    /**
+     * Safely reads a whole-number menu choice.
+     */
+    private static int readInteger(Scanner scanner) {
 
-        while (!scanner.hasNextInt()) {
-            System.out.print(
-                    "Please enter a valid number: "
-            );
-            scanner.nextLine();
+        while (true) {
+
+            String input = scanner.nextLine().trim();
+
+            try {
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.print(
+                        "Invalid input. Enter a whole number: "
+                );
+            }
         }
-
-        int value = scanner.nextInt();
-        scanner.nextLine();
-
-        return value;
     }
 
-    // Pauses the program before returning to the menu
+    /**
+     * Pauses the program before returning to the menu.
+     */
     private static void pause(Scanner scanner) {
 
-        System.out.println(
-                "\nPress Enter to continue..."
-        );
+        System.out.println();
+        System.out.print("Press Enter to continue...");
         scanner.nextLine();
     }
 
-    // Clears the console screen
-    public static void clearScreen() {
+    /**
+     * Adds blank lines to separate console screens.
+     */
+    private static void clearScreen() {
 
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+        for (int i = 0; i < 30; i++) {
+            System.out.println();
+        }
     }
 }

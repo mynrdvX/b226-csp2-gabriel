@@ -194,6 +194,64 @@ public class PlaylistSongCliView {
                 "Enter Junction ID to remove: "
         );
 
+        PlaylistSong selectedRecord = null;
+
+        for (PlaylistSong playlistSong : playlistSongs) {
+            if (playlistSong.getId() == id) {
+                selectedRecord = playlistSong;
+                break;
+            }
+        }
+
+        if (selectedRecord == null) {
+            System.out.println(
+                    "Playlist-song record was not found."
+            );
+            return;
+        }
+
+        System.out.println();
+        System.out.println(
+                "Selected Record"
+        );
+        System.out.println(
+                "-----------------------------"
+        );
+        System.out.println(
+                "Playlist : " + selectedRecord.getPlaylistName()
+        );
+        System.out.println(
+                "Song     : " + selectedRecord.getSongTitle()
+        );
+        System.out.println();
+
+        String confirmation;
+
+        while (true) {
+
+            System.out.print(
+                    "Are you sure you want to remove this song? (Y/N): "
+            );
+
+            confirmation = scanner.nextLine().trim();
+
+            if (confirmation.equalsIgnoreCase("Y")
+                    || confirmation.equalsIgnoreCase("N")) {
+                break;
+            }
+
+            System.out.println(
+                    "Invalid choice. Please enter Y or N only."
+            );
+        }
+
+        if (confirmation.equalsIgnoreCase("N")) {
+            System.out.println(
+                    "Removal cancelled."
+            );
+            return;
+        }
+
         boolean removed =
                 playlistSongController
                         .removeSongFromPlaylist(id);
@@ -204,7 +262,7 @@ public class PlaylistSongCliView {
             );
         } else {
             System.out.println(
-                    "Playlist-song record was not found."
+                    "Failed to remove song from playlist."
             );
         }
     }

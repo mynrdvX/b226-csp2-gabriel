@@ -40,4 +40,31 @@ public class PlaylistController {
     public boolean deletePlaylist(int id) {
         return playlistService.deletePlaylist(id);
     }
+
+    // Retrieves playlists owned by a specific user
+    public List<Playlist> getPlaylistsByUserId(int userId) {
+        return playlistService.getPlaylistsByUserId(userId);
+    }
+
+    // Checks whether a playlist belongs to a specific user
+    public boolean playlistBelongsToUser(
+            int playlistId,
+            int userId
+    ) {
+        return playlistService.playlistBelongsToUser(
+                playlistId,
+                userId
+        );
+    }
+
+    // Deletes a playlist only when it belongs to the user
+    public boolean deletePlaylistByUser(
+            int playlistId,
+            int userId
+    ) {
+        return playlistService.deletePlaylistByUser(
+                playlistId,
+                userId
+        );
+    }
 }

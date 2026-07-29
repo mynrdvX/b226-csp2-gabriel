@@ -24,7 +24,7 @@ public class UserController {
         return userService.searchUser(keyword);
     }
 
-    // Add a new user
+    // Add or register a new user
     public boolean addUser(User user) {
         return userService.addUser(user);
     }
@@ -37,5 +37,16 @@ public class UserController {
     // Delete a user
     public boolean deleteUser(int id) {
         return userService.deleteUser(id);
+    }
+
+    // Authenticate a user
+    public User login(
+            String username,
+            String password
+    ) {
+        return userService.login(
+                username,
+                password
+        );
     }
 }
